@@ -28,3 +28,8 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(normalized_email, user.email)
+
+    def test_create_user_without_email_unsuccesful(self):
+        """Test creating user without email address raises error"""
+        with self.assertRaises(ValueError):
+            get_user_model().objects.create_user(None, 'password')
