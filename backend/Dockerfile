@@ -11,3 +11,5 @@ COPY . /app
 
 RUN adduser -D user
 USER user
+
+ENV PATH $PATH:~/.local/bin
