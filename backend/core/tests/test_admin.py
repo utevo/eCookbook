@@ -6,7 +6,7 @@ from django.urls import reverse
 class AdminSiteTests(TestCase):
 
     def setUp(self):
-        self.cient = Client()
+        self.client = Client()
         self.superuser = get_user_model().objects.create_superuser(
             'admin@gmail.com',
             'password'
@@ -24,3 +24,4 @@ class AdminSiteTests(TestCase):
 
         self.assertContains(res, self.user.name)
         self.assertContains(res, self.user.email)
+             
