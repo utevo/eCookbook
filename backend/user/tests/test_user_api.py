@@ -55,6 +55,8 @@ class PublicUserApiTests(TestCase):
         res = self.client.post(CREATE_USER_URL, other_payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # check that user isn't changed
         user = get_user_model().objects.get(email=payload['email'])
         self.assertEqual(user.email, payload['email'])
         self.assertTrue(user.check_password(payload['password']))
