@@ -57,14 +57,13 @@ class PrivateTagsAPITests(TestCase):
 
     def test_get_only_user_tags(self):
         """Test that only user tags are retrieved"""
+        Tag.objects.create(name='Dessert', user=self.user)
+        Tag.objects.create(name='Italian', user=self.user)
+
         other_user = create_user(
             email='other@gmail.com',
             password='other_password'
         )
-
-        Tag.objects.create(name='Dessert', user=self.user)
-        Tag.objects.create(name='Italian', user=self.user)
-
         Tag.objects.create(name='Vegan', user=other_user)
         Tag.objects.create(name='Keto', user=other_user)
 
@@ -72,7 +71,6 @@ class PrivateTagsAPITests(TestCase):
         serializer = TagSerializer(tags, many=True)
 
         res = self.client.get(TAGS_URL)
-
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
