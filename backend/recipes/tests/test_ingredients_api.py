@@ -63,3 +63,20 @@ class PrivateIngredientAPITests(TestCase):
         res = self.client.get(INGREDIENT_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_ingredient_successful(self):
+        """Test creating a ingredient with valid data."""
+        payload = {"name": "Tomato"}
+        self.client.post(INGREDIENT_URL, payload)
+
+        exists = Ingredient.objects.filter(
+            user=self.user, name=payload["name"]
+        ).exists()
+        self.assertTrue(exists)
+
+    def test_attemt_to_create_empty_ingredient(self):
+        """Test creating a ingredient with empty name is unsuccessful."""
+        payload = {"name": ""}
+        res = self.client.post(INGREDIENT_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
