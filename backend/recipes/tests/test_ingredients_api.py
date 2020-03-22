@@ -8,18 +8,14 @@ from core.models import Ingredient
 from recipes.serializers import IngredientSerializer
 
 
-INGREDIENT_URL = reverse('recipes:ingredient-list')
+INGREDIENT_URL = reverse("recipes:ingredient-list")
 
 
 def create_user(email, password):
-    return get_user_model().objects.create_user(
-        email=email,
-        password=password
-    )
+    return get_user_model().objects.create_user(email=email, password=password)
 
 
 class PublicIngredientAPITests(TestCase):
-
     def setUp(self):
         self.client = APIClient()
 
@@ -30,20 +26,18 @@ class PublicIngredientAPITests(TestCase):
 
 
 class PrivateIngredientAPITests(TestCase):
-
     def setUp(self):
         self.user = create_user(
-            email='test@gmail.com',
-            password='test_password'
+            email="test@gmail.com", password="test_password"
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     def test_get_list(self):
-        Ingredient.objects.create(name='Spinash', user=self.user)
-        Ingredient.objects.create(name='Cucumber', user=self.user)
+        Ingredient.objects.create(name="Spinash", user=self.user)
+        Ingredient.objects.create(name="Cucumber", user=self.user)
 
-        ingredients = Ingredient.objects.all().order_by('-name')
+        ingredients = Ingredient.objects.all().order_by("-name")
         serializer = IngredientSerializer(ingredients, many=True)
 
         res = self.client.get(INGREDIENT_URL)
@@ -52,19 +46,18 @@ class PrivateIngredientAPITests(TestCase):
 
     def test_get_only_user_ingredients(self):
         """Test that only user ingredients are retrieved"""
-        Ingredient.objects.create(name='Cucumber', user=self.user)
-        Ingredient.objects.create(name='Tomato', user=self.user)
+        Ingredient.objects.create(name="Cucumber", user=self.user)
+        Ingredient.objects.create(name="Tomato", user=self.user)
 
         other_user = create_user(
-            email='other@gmail.com',
-            password='other_password'
+            email="other@gmail.com", password="other_password"
         )
-        Ingredient.objects.create(name='Broccoli', user=other_user)
-        Ingredient.objects.create(name='Carrot', user=other_user)
+        Ingredient.objects.create(name="Broccoli", user=other_user)
+        Ingredient.objects.create(name="Carrot", user=other_user)
 
-        ingredients = Ingredient.objects\
-                                .filter(user=self.user)\
-                                .order_by('-name')
+        ingredients = Ingredient.objects.filter(user=self.user).order_by(
+            "-name"
+        )
         serializer = IngredientSerializer(ingredients, many=True)
 
         res = self.client.get(INGREDIENT_URL)
