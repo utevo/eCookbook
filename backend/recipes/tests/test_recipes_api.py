@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -105,3 +107,55 @@ class PrivateRecipesAPITests(TestCase):
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_basic_recipe(self):
+        payload = {
+            'title': "Sugar Cookies",
+            'time_minutes': 120,
+            'price_dolars': Decimal('8.99')
+        }
+        res = self.client.post(RECIPE_URL, payload)
+
+        recipe = Recipe.objects.get(id=res.data['id'])
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        for key in payload.keys():
+            self.assertEqual(getattr(recipe, key), payload[key])
+
+    def test_create_recipe_with_tags(self):
+        tag = sample_tag(user=self.user, name="Desser")
+        other_tag = sample_tag(user=self.user, name="Delicious")
+        payload = {
+            'title': "Sugar Cookies",
+            'time_minutes': 120,
+            'price_dolars': Decimal('8.99'),
+            'tags': [tag.id, other_tag.id, ]
+        }
+        res = self.client.post(RECIPE_URL, payload)
+
+        recipe = Recipe.objects.get(id=res.data['id'])
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        tags = recipe.tags.all()
+        self.assertEqual(tags.count(), 2)
+        self.assertIn(tag, tags)
+        self.assertIn(other_tag, tags)
+
+    def test_create_recipe_with_ingredients(self):
+        ingredient = sample_ingredient(user=self.user, name="Sugar")
+        other_ingredient = sample_ingredient(user=self.user, name="Eggs")
+        payload = {
+            'title': "Sugar Cookies",
+            'time_minutes': 120,
+            'price_dolars': Decimal('8.99'),
+            'ingredients': [ingredient.id, other_ingredient.id, ]
+        }
+        res = self.client.post(RECIPE_URL, payload)
+
+        recipe = Recipe.objects.get(id=res.data['id'])
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        ingredients = recipe.ingredients.all()
+        self.assertEqual(ingredients.count(), 2)
+        self.assertIn(ingredient, ingredients)
+        self.assertIn(other_ingredient, ingredients)
