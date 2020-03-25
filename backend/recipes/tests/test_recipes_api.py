@@ -13,8 +13,8 @@ from recipes.serializers import RecipeSerializer, RecipeDetailSerializer
 RECIPE_URL = reverse("recipes:recipe-list")
 
 
-def detail_recipe_url(recipte_id):
-    return reverse('recipes:recipe-detail', args=[recipte_id])
+def detail_recipe_url(recipe_id):
+    return reverse('recipes:recipe-detail', args=[recipe_id])
 
 
 def create_user(email, password):
