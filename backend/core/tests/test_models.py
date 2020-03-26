@@ -10,8 +10,8 @@ def sample_user(email='email@gmail.com', password='test_password'):
 
 class UserModelTests(TestCase):
 
-    def test_create_user_with_email_succesful(self):
-        """Test creating user with an email is succesful"""
+    def test_create_user_with_email_successful(self):
+        """Test creating user with an email is successful"""
         email = 'test@gmail.com'
         password = 'password'
         user = get_user_model().objects.create_user(
@@ -35,7 +35,7 @@ class UserModelTests(TestCase):
 
         self.assertEqual(normalized_email, user.email)
 
-    def test_create_user_without_email_unsuccesful(self):
+    def test_create_user_without_email_unsuccessful(self):
         """Test creating user without email address raises error"""
         with self.assertRaises(ValueError):
             get_user_model().objects.create_user(None, 'password')
