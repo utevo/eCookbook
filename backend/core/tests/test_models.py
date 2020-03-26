@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -86,3 +88,13 @@ class RecipeModelTests(TestCase):
         )
 
         self.assertEqual(str(recipe), recipe.title)
+
+    @patch('uuid.uuid4')
+    def test_recipe_image_path(self, mock_uuid4):
+        uuid = 'test_uuid'
+        mock_uuid4.return_value = uuid
+
+        exp_path = f'uploads/recipes/{uuid}.jpg'
+
+        path = models.recipe_image_path(None, 'image.jpg')
+        self.assertEqual(path, exp_path)

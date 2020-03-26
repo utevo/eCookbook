@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -63,6 +66,13 @@ class Ingredient(models.Model):
         return self.name
 
 
+def recipe_image_path(instance, filename):
+    _, ext = os.path.splitext(filename)
+    filename = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads/recipes/', filename)
+
+
 class Recipe(models.Model):
 
     title = models.CharField(max_length=255)
@@ -75,6 +85,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField('Ingredient')
     tags = models.ManyToManyField('Tag')
+    images = models.ImageField(null=True, upload_to=recipe_image_path)
 
     def __str__(self):
         return self.title
