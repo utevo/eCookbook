@@ -159,3 +159,23 @@ class PrivateRecipesAPITests(TestCase):
         self.assertEqual(ingredients.count(), 2)
         self.assertIn(ingredient, ingredients)
         self.assertIn(other_ingredient, ingredients)
+
+    def test_partial_update_recipe(self):
+        recipe = sample_recipe(user=self.user)
+        recipe.tags.add(sample_tag(user=self.user))
+
+        new_title = 'New Title'
+        new_tags = [sample_tag(user=self.user, name='New Tag')]
+        payload = {
+            'title': new_title,
+            'tags': [tag.id for tag in new_tags],
+        }
+
+        url = detail_recipe_url(recipe.id)
+        res = self.client.patch(url, payload)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.title, new_title)
+        tags = list(recipe.tags.all())
+        self.assertEqual(tags, new_tags)
