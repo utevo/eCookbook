@@ -85,7 +85,7 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField('Ingredient')
     tags = models.ManyToManyField('Tag')
-    images = models.ImageField(null=True, upload_to=recipe_image_path)
+    image = models.ImageField(null=True, upload_to=recipe_image_path)
 
     def __str__(self):
         return self.title
