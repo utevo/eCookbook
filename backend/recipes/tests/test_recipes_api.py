@@ -16,7 +16,7 @@ from core.models import Tag, Ingredient, Recipe
 from recipes.serializers import RecipeSerializer, RecipeDetailSerializer
 
 
-RECIPE_URL = reverse("recipes:recipe-list")
+RECIPES_URL = reverse("recipes:recipe-list")
 
 
 def image_upload_url(recipe_id):
@@ -56,7 +56,7 @@ class PublicRecipesAPITests(TestCase):
 
     def test_login_required(self):
         """Test that authentication is needed for retriving tags"""
-        res = self.client.get(RECIPE_URL)
+        res = self.client.get(RECIPES_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -79,7 +79,7 @@ class PrivateRecipesAPITests(TestCase):
         recipes = Recipe.objects.all().order_by('-title')
         serializer = RecipeSerializer(recipes, many=True)
 
-        res = self.client.get(RECIPE_URL)
+        res = self.client.get(RECIPES_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -101,7 +101,7 @@ class PrivateRecipesAPITests(TestCase):
         recipes = Recipe.objects.filter(user=self.user).order_by('-title')
         serializer = RecipeSerializer(recipes, many=True)
 
-        res = self.client.get(RECIPE_URL)
+        res = self.client.get(RECIPES_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
@@ -122,7 +122,7 @@ class PrivateRecipesAPITests(TestCase):
             'time_minutes': 120,
             'price_dolars': Decimal('8.99')
         }
-        res = self.client.post(RECIPE_URL, payload)
+        res = self.client.post(RECIPES_URL, payload)
 
         recipe = Recipe.objects.get(id=res.data['id'])
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -139,7 +139,7 @@ class PrivateRecipesAPITests(TestCase):
             'price_dolars': Decimal('8.99'),
             'tags': [tag.id, other_tag.id, ]
         }
-        res = self.client.post(RECIPE_URL, payload)
+        res = self.client.post(RECIPES_URL, payload)
 
         recipe = Recipe.objects.get(id=res.data['id'])
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -158,7 +158,7 @@ class PrivateRecipesAPITests(TestCase):
             'price_dolars': Decimal('8.99'),
             'ingredients': [ingredient.id, other_ingredient.id, ]
         }
-        res = self.client.post(RECIPE_URL, payload)
+        res = self.client.post(RECIPES_URL, payload)
 
         recipe = Recipe.objects.get(id=res.data['id'])
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -215,6 +215,48 @@ class PrivateRecipesAPITests(TestCase):
         self.assertEqual(tags_list, new_tags)
         ingredients = recipe.ingredients.all()
         self.assertEqual(ingredients.count(), 0)
+
+    def test_filter_recipes_by_tags(self):
+        recipe1 = sample_recipe(user=self.user, title='Recipe 1')
+        tag1 = sample_tag(user=self.user, name='Tag 1')
+        recipe1.tags.add(tag1)
+        recipe2 = sample_recipe(user=self.user, title='Recipe 2')
+        tag2 = sample_tag(user=self.user, name='Tag 2')
+        recipe2.tags.add(tag2)
+        recipe3 = sample_recipe(user=self.user, title='Recipe 3')
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'tags': f'{tag1.id}'}
+        )
+
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+        self.assertIn(serializer1.data, res.data)
+        self.assertNotIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    def test_filter_recipes_by_ingredient(self):
+        recipe1 = sample_recipe(user=self.user, title='Recipe 1')
+        ingredient1 = sample_ingredient(user=self.user, name='Ingredient 1')
+        recipe1.ingredients.add(ingredient1)
+        recipe2 = sample_recipe(user=self.user, title='Recipe 2')
+        ingredient2 = sample_ingredient(user=self.user, name='Ingredient 2')
+        recipe2.ingredients.add(ingredient2)
+        recipe3 = sample_recipe(user=self.user, title='Recipe 3')
+
+        res = self.client.get(
+            RECIPES_URL,
+            {'ingredients': f'{ingredient1.id}'}
+        )
+
+        serializer1 = RecipeSerializer(recipe1)
+        serializer2 = RecipeSerializer(recipe2)
+        serializer3 = RecipeSerializer(recipe3)
+        self.assertIn(serializer1.data, res.data)
+        self.assertNotIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
 
 
 class RecipeImageUploadTests(TestCase):

@@ -43,8 +43,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated, )
     authentication_classes = (TokenAuthentication, )
 
+    def _query_param_to_ints(self, qp):
+        return [int(str_id) for str_id in qp.split(',')]
+
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user).order_by('-title')
+        qp_tags = self.request.query_params.get('tags')
+        qp_ingredients = self.request.query_params.get('ingredients')
+
+        queryset = self.queryset
+        if qp_tags:
+            tags = self._query_param_to_ints(qp_tags)
+            queryset = queryset.filter(tags__id__in=tags)
+        if qp_ingredients:
+            ingredients = self._query_param_to_ints(qp_ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredients)
+
+        return queryset.filter(user=self.request.user).order_by('-title')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
