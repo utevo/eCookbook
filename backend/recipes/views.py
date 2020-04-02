@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-
 from core.models import Tag, Ingredient, Recipe
 from recipes import serializers
 
@@ -52,11 +51,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         queryset = self.queryset
         if qp_tags:
-            tags = self._query_param_to_ints(qp_tags)
-            queryset = queryset.filter(tags__id__in=tags)
+            tag_ids = self._query_param_to_ints(qp_tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
         if qp_ingredients:
-            ingredients = self._query_param_to_ints(qp_ingredients)
-            queryset = queryset.filter(ingredients__id__in=ingredients)
+            ingredient_ids = self._query_param_to_ints(qp_ingredients)
+            queryset = queryset.filter(ingredients__id__in=ingredient_ids)
 
         return queryset.filter(user=self.request.user).order_by('-title')
 
