@@ -19,7 +19,20 @@ services:
             - DB_PASSWORD=guitarhello
         depends_on:
             - db
-            
+
+    frontend:
+        build:
+            context: frontend
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        environment:
+            - NODE_ENV=development
+        depends_on:
+            - backend
+
     db:
         image: postgres:10-alpine
         environment:
